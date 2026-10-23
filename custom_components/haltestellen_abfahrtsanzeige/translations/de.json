@@ -1,0 +1,128 @@
+{
+  "title": "Haltestellen-Abfahrtsanzeige",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ort auswählen",
+        "description": "Gib einen Ort ein. Danach kannst du eine der verfügbaren Haltestellen auswählen.",
+        "data": {
+          "search": "Ort"
+        }
+      },
+      "select_stop": {
+        "title": "Haltestelle auswählen",
+        "description": "{count} Haltestellen im Bereich {town} gefunden. Wähle eine Haltestelle aus.",
+        "data": {
+          "stop_id": "Haltestelle"
+        }
+      },
+      "confirm": {
+        "title": "Abfahrtstafel hinzufügen",
+        "description": "Abfahrten an {stop}",
+        "data": {
+          "name": "Sensorname"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Haltestellen konnten nicht abgerufen werden. Bitte erneut versuchen.",
+      "no_stops": "Für diesen Ort wurden keine Haltestellen gefunden.",
+      "invalid_search": "Bitte mindestens zwei Zeichen eingeben.",
+      "invalid_stop": "Bitte eine Haltestelle aus der Liste auswählen.",
+      "invalid_name": "Bitte einen Sensornamen eingeben."
+    },
+    "abort": {
+      "already_configured": "Diese Haltestelle wurde bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Abfahrtstafel",
+        "data": {
+          "board_size": "Maximale Anzahl abgefragter Abfahrten",
+          "refresh_mode": "Aktualisierungsmodus"
+        },
+        "data_description": {
+          "refresh_mode": "Steuert automatisch, wie häufig die Haltestelle abgefragt wird. Bei Fehlern werden die Intervalle unabhängig davon verlängert."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "transitous_unavailable": "Transitous liefert derzeit keine Abfahrtsdaten. Die Integration versucht es automatisch erneut."
+  },
+  "triggers": {
+    "departure_soon": {
+      "name": "Abfahrt steht bevor",
+      "description": "Löst einmal pro Busfahrt aus, sobald die ausgewählte Restzeit bis zur Abfahrt erreicht wird.",
+      "fields": {
+        "entity_id": {
+          "name": "Haltestellensensor",
+          "description": "Einen Sensor dieser Integration auswählen."
+        },
+        "line": {
+          "name": "Buslinie (optional)",
+          "description": "Exakte Liniennummer; leer lassen für alle Linien."
+        },
+        "destination": {
+          "name": "Fahrtziel enthält (optional)",
+          "description": "Teil des Fahrtziels; leer lassen für alle Richtungen."
+        },
+        "minutes_before": {
+          "name": "Minuten vor Abfahrt",
+          "description": "Vorlaufzeit in Minuten (1–120)."
+        }
+      }
+    },
+    "delay_reached": {
+      "name": "Verspätung erreicht",
+      "description": "Löst aus, wenn eine Busfahrt neu mit mindestens der gewählten Verspätung gemeldet wird.",
+      "fields": {
+        "entity_id": {
+          "name": "Haltestellensensor",
+          "description": "Einen Sensor dieser Integration auswählen."
+        },
+        "line": {
+          "name": "Buslinie (optional)",
+          "description": "Exakte Liniennummer; leer lassen für alle Linien."
+        },
+        "destination": {
+          "name": "Fahrtziel enthält (optional)",
+          "description": "Teil des Fahrtziels; leer lassen für alle Richtungen."
+        },
+        "minimum_delay": {
+          "name": "Verspätung ab (Minuten)",
+          "description": "Ab dieser Verspätung auslösen (1–120 Minuten)."
+        }
+      }
+    },
+    "trip_cancelled": {
+      "name": "Busfahrt fällt aus",
+      "description": "Löst aus, wenn eine bevorstehende Busfahrt neu als ausgefallen gemeldet wird.",
+      "fields": {
+        "entity_id": {
+          "name": "Haltestellensensor",
+          "description": "Einen Sensor dieser Integration auswählen."
+        },
+        "line": {
+          "name": "Buslinie (optional)",
+          "description": "Exakte Liniennummer; leer lassen für alle Linien."
+        },
+        "destination": {
+          "name": "Fahrtziel enthält (optional)",
+          "description": "Teil des Fahrtziels; leer lassen für alle Richtungen."
+        }
+      }
+    }
+  },
+  "selector": {
+    "refresh_mode": {
+      "options": {
+        "adaptive": "Dynamisch (1–10 Minuten)",
+        "economy": "Datensparend (2–12 Minuten)",
+        "fixed": "Fest (5 Minuten)"
+      }
+    }
+  }
+}

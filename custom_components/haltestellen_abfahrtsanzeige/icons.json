@@ -1,0 +1,13 @@
+{
+  "triggers": {
+    "departure_soon": {
+      "trigger": "mdi:bus-clock"
+    },
+    "delay_reached": {
+      "trigger": "mdi:clock-alert-outline"
+    },
+    "trip_cancelled": {
+      "trigger": "mdi:bus-alert"
+    }
+  }
+}

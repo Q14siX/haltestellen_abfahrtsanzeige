@@ -1,0 +1,16 @@
+{
+  "domain": "haltestellen_abfahrtsanzeige",
+  "name": "Haltestellen-Abfahrtsanzeige",
+  "version": "20261023.114618",
+  "documentation": "https://transitous.org/doc/",
+  "dependencies": [
+    "frontend",
+    "http",
+    "lovelace"
+  ],
+  "codeowners": [],
+  "requirements": [],
+  "config_flow": true,
+  "integration_type": "service",
+  "iot_class": "cloud_polling"
+}

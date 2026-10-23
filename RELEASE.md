@@ -4,7 +4,7 @@
 
 # Haltestellen-Abfahrtsanzeige — First Public Release
 
-**Version `20261023.110239` · 23 October 2026 · Home Assistant 2026.9.0+**
+**Version `20261023.114618` · 23 October 2026 · Home Assistant 2026.9.0+**
 
 [Deutsch](#deutsch) · [English](#english) · [Documentation / Dokumentation](README.md)
 

@@ -1,0 +1,46 @@
+.fields: &common_fields
+  entity_id:
+    required: true
+    selector:
+      entity:
+        filter:
+          - integration: haltestellen_abfahrtsanzeige
+            domain: sensor
+  line:
+    selector:
+      text: {}
+  destination:
+    selector:
+      text: {}
+
+departure_soon:
+  fields:
+    <<: *common_fields
+    minutes_before:
+      required: true
+      default: 10
+      selector:
+        number:
+          min: 1
+          max: 120
+          step: 1
+          mode: box
+          unit_of_measurement: min
+
+delay_reached:
+  fields:
+    <<: *common_fields
+    minimum_delay:
+      required: true
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 120
+          step: 1
+          mode: box
+          unit_of_measurement: min
+
+trip_cancelled:
+  fields:
+    <<: *common_fields

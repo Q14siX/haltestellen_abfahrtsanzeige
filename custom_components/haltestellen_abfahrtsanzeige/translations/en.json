@@ -1,0 +1,128 @@
+{
+  "title": "Bus Stop Departure Board",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Choose a town",
+        "description": "Enter a town, then choose one of the available stops.",
+        "data": {
+          "search": "Town"
+        }
+      },
+      "select_stop": {
+        "title": "Choose a stop",
+        "description": "Found {count} stops near {town}. Choose one stop.",
+        "data": {
+          "stop_id": "Bus stop"
+        }
+      },
+      "confirm": {
+        "title": "Add departure board",
+        "description": "Departures from {stop}",
+        "data": {
+          "name": "Sensor name"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to retrieve stops. Please retry.",
+      "no_stops": "No stops found for this town.",
+      "invalid_search": "Please enter at least two characters.",
+      "invalid_stop": "Select a stop from the list.",
+      "invalid_name": "Please enter a sensor name."
+    },
+    "abort": {
+      "already_configured": "This stop is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Departure board",
+        "data": {
+          "board_size": "Maximum departures to fetch",
+          "refresh_mode": "Refresh mode"
+        },
+        "data_description": {
+          "refresh_mode": "Automatically adjusts how frequently this stop is queried. After errors, the interval is extended regardless of mode."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "transitous_unavailable": "Transitous is temporarily unavailable. The integration will automatically retry."
+  },
+  "triggers": {
+    "departure_soon": {
+      "name": "Departure is approaching",
+      "description": "Triggers once for each upcoming bus when the chosen number of minutes remains.",
+      "fields": {
+        "entity_id": {
+          "name": "Departure sensor",
+          "description": "Select a stop sensor provided by this integration."
+        },
+        "line": {
+          "name": "Bus line (optional)",
+          "description": "Exact bus line number; leave blank for every line."
+        },
+        "destination": {
+          "name": "Destination contains (optional)",
+          "description": "Match a part of the destination; leave blank for all destinations."
+        },
+        "minutes_before": {
+          "name": "Minutes before departure",
+          "description": "Lead time in minutes (1–120)."
+        }
+      }
+    },
+    "delay_reached": {
+      "name": "Delay threshold reached",
+      "description": "Triggers when a bus is newly reported with at least the chosen delay.",
+      "fields": {
+        "entity_id": {
+          "name": "Departure sensor",
+          "description": "Select a stop sensor provided by this integration."
+        },
+        "line": {
+          "name": "Bus line (optional)",
+          "description": "Exact bus line number; leave blank for every line."
+        },
+        "destination": {
+          "name": "Destination contains (optional)",
+          "description": "Match a part of the destination; leave blank for all destinations."
+        },
+        "minimum_delay": {
+          "name": "Minimum delay in minutes",
+          "description": "Alert when the delay reaches this number of minutes (1–120)."
+        }
+      }
+    },
+    "trip_cancelled": {
+      "name": "Bus departure cancelled",
+      "description": "Triggers when an upcoming bus is newly reported as cancelled.",
+      "fields": {
+        "entity_id": {
+          "name": "Departure sensor",
+          "description": "Select a stop sensor provided by this integration."
+        },
+        "line": {
+          "name": "Bus line (optional)",
+          "description": "Exact bus line number; leave blank for every line."
+        },
+        "destination": {
+          "name": "Destination contains (optional)",
+          "description": "Match a part of the destination; leave blank for all destinations."
+        }
+      }
+    }
+  },
+  "selector": {
+    "refresh_mode": {
+      "options": {
+        "adaptive": "Adaptive (1–10 minutes)",
+        "economy": "Economy (2–12 minutes)",
+        "fixed": "Fixed (5 minutes)"
+      }
+    }
+  }
+}
