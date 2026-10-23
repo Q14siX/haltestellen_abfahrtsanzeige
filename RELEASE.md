@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="brand/icon.png" alt="Haltestellen-Abfahrtsanzeige" width="112">
+  <img src="https://raw.githubusercontent.com/Q14siX/haltestellen_abfahrtsanzeige/main/custom_components/haltestellen_abfahrtsanzeige/brand/icon.png" alt="Haltestellen-Abfahrtsanzeige" width="112">
 </p>
 
 # Haltestellen-Abfahrtsanzeige — First Public Release
