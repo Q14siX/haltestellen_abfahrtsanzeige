@@ -1,7 +1,7 @@
 {
   "domain": "haltestellen_abfahrtsanzeige",
   "name": "Haltestellen-Abfahrtsanzeige",
-  "version": "20261023.114618",
+  "version": "20261023.234716",
   "documentation": "https://transitous.org/doc/",
   "dependencies": [
     "frontend",

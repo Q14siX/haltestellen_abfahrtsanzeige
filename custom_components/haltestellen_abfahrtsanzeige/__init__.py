@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 from time import perf_counter
 
+from homeassistant.components import websocket_api
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -20,6 +21,7 @@ from .disruptions import collect_disruptions
 from .route_geometry import TripGeometryService, TripGeometryView
 from .monitoring import RequestHealth
 from .polling import next_failed_poll, next_successful_poll
+from .websocket import websocket_get_departures
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = ["sensor", "binary_sensor"]
@@ -107,6 +109,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         service = TripGeometryService(hass)
         hass.data[DOMAIN]["_route_service"] = service
         hass.http.register_view(TripGeometryView(service))
+    websocket_api.async_register_command(hass, websocket_get_departures)
     await async_setup_dashboard(hass)
     return True
 

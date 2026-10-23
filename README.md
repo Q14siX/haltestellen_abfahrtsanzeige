@@ -172,13 +172,16 @@ Der Hauptsensor einer Haltestelle zeigt die **Minuten bis zur nächsten nicht au
 
 | Attribut | Bedeutung |
 | --- | --- |
-| `abfahrten` | Strukturierte Liste der kommenden Abfahrten |
+| `abfahrten` | Recorder-schonende Vorschau der kommenden Abfahrten |
 | `haltestelle` | Name der Haltestelle |
 | `naechste_linie`, `naechstes_ziel` | Linie und Ziel der nächsten Abfahrt |
 | `naechste_abfahrt` | Zeitpunkt der nächsten Abfahrt |
 | `zeitpunkt_abfrage`, `datenstatus` | Aktualität und Qualität der Daten |
 | `verkehrshinweise`, `verkehrshinweise_anzahl` | Verfügbare Störungsinformationen |
-| `next_departures` | Zusätzliches Datenformat für kompatible Abfahrtskarten |
+| `next_departures` | Kompakte Vorschau für kompatible Abfahrtskarten |
+| `abfahrten_gekuerzt`, `verkehrshinweise_gekuerzt` | Kennzeichnung gekürzter Sensorattribute |
+
+**Recorder und vollständige Fahrtdetails:** Home Assistant begrenzt die Größe gespeicherter Sensorattribute. Die Integration veröffentlicht deshalb eine größenbegrenzte Vorschau in `abfahrten`, `next_departures` und `verkehrshinweise`. Die vollständigen Abfahrts- und Folgehaltestellendaten bleiben im Arbeitsspeicher des Koordinators und werden von der mitgelieferten Lovelace-Karte über eine authentifizierte Home-Assistant-WebSocket-Verbindung angefordert. Native Automationsauslöser verwenden weiterhin den vollständigen Datenbestand. Es entstehen dadurch keine zusätzlichen Fahrplan-API-Abfragen. Drittanbieter-Karten und eigene Templates, die ausschließlich Sensorattribute lesen, erhalten nur die Vorschau.
 
 Ergänzend werden Diagnoseentitäten für die Erreichbarkeit der API und die Dauer des letzten Datenabrufs bereitgestellt. Ein Diagnoseexport ist über die Home-Assistant-Integrationsverwaltung verfügbar.
 
@@ -384,13 +387,16 @@ Each stop's main sensor reports the **number of minutes until the next non-cance
 
 | Attribute | Meaning |
 | --- | --- |
-| `abfahrten` | Structured list of upcoming departures |
+| `abfahrten` | Recorder-friendly preview of upcoming departures |
 | `haltestelle` | Stop name |
 | `naechste_linie`, `naechstes_ziel` | Route and destination of the next departure |
 | `naechste_abfahrt` | Time of the next departure |
 | `zeitpunkt_abfrage`, `datenstatus` | Data freshness and quality |
 | `verkehrshinweise`, `verkehrshinweise_anzahl` | Available service notices |
-| `next_departures` | Alternative data structure for compatible departure cards |
+| `next_departures` | Compact preview for compatible departure cards |
+| `abfahrten_gekuerzt`, `verkehrshinweise_gekuerzt` | Indicates truncated sensor attributes |
+
+**Recorder and full journey details:** Home Assistant limits the size of stored sensor attributes. The integration therefore publishes a size-bounded preview in `abfahrten`, `next_departures`, and `verkehrshinweise`. Complete departures and following stops remain cached in the coordinator and are retrieved by the bundled Lovelace card through an authenticated Home Assistant WebSocket connection. Native automation triggers continue to use the full data set, without generating additional timetable API requests. Third-party cards and templates reading only entity attributes receive the compact preview.
 
 Additional diagnostic entities report API availability and the last request duration. A diagnostics export is available from the Home Assistant integration management interface.
 

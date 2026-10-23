@@ -2,9 +2,9 @@
   <img src="https://raw.githubusercontent.com/Q14siX/haltestellen_abfahrtsanzeige/main/custom_components/haltestellen_abfahrtsanzeige/brand/icon.png" alt="Haltestellen-Abfahrtsanzeige" width="112">
 </p>
 
-# Haltestellen-Abfahrtsanzeige — First Public Release
+# Haltestellen-Abfahrtsanzeige — Release Notes
 
-**Version `20261023.114618` · 23 October 2026 · Home Assistant 2026.9.0+**
+**Version `20261023.234716` · 23 October 2026 · Home Assistant 2026.9.0+**
 
 [Deutsch](#deutsch) · [English](#english) · [Documentation / Dokumentation](README.md)
 
@@ -13,7 +13,14 @@
 <a id="deutsch"></a>
 ## 🇩🇪 Deutsch
 
-### Erstveröffentlichung
+### Recorder-Korrektur / Wartungsupdate
+
+- Sensorattribute werden auf ein Recorder-schonendes Größenbudget begrenzt, damit keine Überschreitungen der 16-KiB-Grenze auftreten.
+- Die mitgelieferte Lovelace-Karte erhält weiterhin sämtliche Abfahrten, Folgehaltestellen und Verkehrshinweise über eine authentifizierte und entitätsberechtigte WebSocket-Abfrage der bereits zwischengespeicherten Daten.
+- Native Automationsauslöser prüfen weiterhin alle verfügbaren Abfahrten; zusätzliche Transitous-Abfragen entstehen nicht.
+- Bestehende Haltestellen und Dashboard-Konfigurationen bleiben erhalten. Andere Karten oder Templates, die ausschließlich Sensorattribute auswerten, erhalten künftig eine gekürzte Vorschau.
+
+### Erstveröffentlichung (`20261023.114618`)
 
 **Haltestellen-Abfahrtsanzeige** bringt Bus- und Fernbusabfahrten auf Dein Home-Assistant-Dashboard. Die Integration verwendet Fahrplandaten der öffentlichen **Transitous/MOTIS-API** und verbindet Haltestellensensoren mit einer frei konfigurierbaren Lovelace-Karte, Diagnosedaten und nativen Automationsauslösern.
 
@@ -51,7 +58,14 @@ Anschließend unter **Einstellungen → Geräte & Dienste** mindestens eine Halt
 <a id="english"></a>
 ## 🇬🇧 English
 
-### Initial public release
+### Recorder compatibility fix / maintenance update
+
+- Entity attributes now use a Recorder-safe byte budget, preventing the 16-KiB attribute-size warning.
+- The bundled Lovelace card still displays the complete timetable, following stops, and service notices through an authenticated, entity-authorized WebSocket read of already cached data.
+- Native automation triggers still evaluate all known departures without additional Transitous API calls.
+- Existing stop and dashboard configurations remain compatible. Third-party cards or templates reading entity attributes only receive a compact preview.
+
+### Initial public release (`20261023.114618`)
 
 **Haltestellen-Abfahrtsanzeige (Bus Stop Departure Board)** brings local and long-distance bus departures to your Home Assistant dashboard. The integration uses the public **Transitous/MOTIS API** to combine stop sensors, a configurable Lovelace card, diagnostics, and native automation triggers.
 

@@ -112,6 +112,13 @@ class _BusDepartureTrigger(Trigger):
             if state.attributes.get("abruf_erfolgreich") is False:
                 return
             rows = state.attributes.get("abfahrten")
+            # Coordinator holds the complete feed; Recorder stores a bounded
+            # preview. Automations must still inspect every retrieved trip.
+            registered = er.async_get(self._hass).async_get(self._entity_id)
+            if registered is not None and registered.platform == DOMAIN and registered.config_entry_id:
+                coordinator = self._hass.data.get(DOMAIN, {}).get(registered.config_entry_id)
+                if coordinator is not None and coordinator.data is not None:
+                    rows = coordinator.data.get("abfahrten", rows)
             if not isinstance(rows, list):
                 return
             for payload in self._monitor.evaluate(rows, now=datetime.now(timezone.utc)):

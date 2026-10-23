@@ -49,7 +49,7 @@ async function tripGeometryFor(hass, tripId) {
   return result;
 }
 const BOARD_TYPE = "haltestellen-abfahrtsanzeige";
-const BOARD_BUILD = "20261023.114618";
+const BOARD_BUILD = "20261023.234716";
 const COLUMNS = [
   ["stop", "Haltestelle", "Stop"],
   ["line", "Linie", "Line"],
@@ -236,10 +236,19 @@ function selectedStopEntities(cfg){
   const explicit=Array.isArray(cfg?.entities)?cfg.entities.filter(id=>typeof id==="string"&&id.startsWith("sensor.")):[];
   return [...new Set(explicit.length?explicit:[cfg?.entity].filter(Boolean))];
 }
-function mergedStopState(hass,cfg){
+// Recorder receives a compact sensor preview. The complete cached departures
+// are delivered separately by the integration's authenticated WebSocket command.
+function fullStopState(hass,id,snapshots){
+  const state=hass?.states?.[id];
+  const snapshot=snapshots?.get(id);
+  if(!state || !snapshot || !snapshot.data || snapshot.revision!==state.attributes?.zeitpunkt_abfrage)return state;
+  return {...state,attributes:{...state.attributes,
+    abfahrten:snapshot.data.abfahrten,verkehrshinweise:snapshot.data.verkehrshinweise}};
+}
+function mergedStopState(hass,cfg,snapshots=null){
   const ids=selectedStopEntities(cfg);
-  if(ids.length<=1)return hass?.states?.[ids[0]];
-  const source=ids.map(id=>({id,state:hass?.states?.[id]}));
+  if(ids.length<=1)return fullStopState(hass,ids[0],snapshots);
+  const source=ids.map(id=>({id,state:fullStopState(hass,id,snapshots)}));
   const present=source.filter(x=>x.state && Array.isArray(x.state.attributes?.abfahrten));
   const rows=present.flatMap(({id,state})=>{
     const name=state.attributes.haltestelle||state.attributes.friendly_name||id;
@@ -700,6 +709,7 @@ class StopDepartureDisplay extends HTMLElement {
     this._sortOverride=null;this._quickLine="";this._quickDestination="";this._favoriteOnly=false;this._favoriteLines=new Set();this._favoritesLoadedKey="";this._openTrips=new Set();this._configSignature="";
     this._selectedTripKey=null;this._mapState=null;this._mapInstances=new Set();this._inlineMaps=new Map();this._tableObserver=null;
     this._fullscreenListener=()=>this._syncFullscreenButton();
+    this._richSnapshots=new Map();this._richRequests=new Map();
     this._lastDataSignature=null;this._lastMinute=null;this._lastCivilDay=null;this._lastTimeZone=null;this._renderedRows=[];this._ticker=null;
   }
   connectedCallback(){
@@ -719,13 +729,41 @@ class StopDepartureDisplay extends HTMLElement {
     const next={...DEFAULTS,...config};delete next.show_sort;
     const signature=JSON.stringify(next);
     if(signature===this._configSignature)return;
-    this._cfg=next;this._configSignature=signature;this._draw();
+    this._cfg=next;this._configSignature=signature;this._refreshRichData();this._draw();
+  }
+  _mergedState(){return mergedStopState(this._hass,this._cfg,this._richSnapshots);}
+  _refreshRichData(){
+    const hass=this._hass;
+    if(!hass || typeof hass.callWS!=="function")return;
+    const ids=selectedStopEntities(this._cfg);
+    for(const id of this._richSnapshots.keys())if(!ids.includes(id))this._richSnapshots.delete(id);
+    for(const id of this._richRequests.keys())if(!ids.includes(id))this._richRequests.delete(id);
+    for(const id of ids){
+      const revision=hass.states?.[id]?.attributes?.zeitpunkt_abfrage;
+      if(!revision)continue;
+      if(this._richSnapshots.get(id)?.revision===revision)continue;
+      const prior=this._richRequests.get(id);
+      if(prior?.revision===revision && (prior.pending || Date.now()-prior.started<60000))continue;
+      const request={revision,started:Date.now(),pending:true};
+      this._richRequests.set(id,request);
+      Promise.resolve().then(()=>hass.callWS({type:"haltestellen_abfahrtsanzeige/get_departures",entity_id:id}))
+        .then(result=>{
+          if(!Array.isArray(result?.abfahrten)||!Array.isArray(result?.verkehrshinweise))return;
+          // Ignore outdated replies if the coordinator advanced since the request.
+          if(result.zeitpunkt_abfrage!==this._hass?.states?.[id]?.attributes?.zeitpunkt_abfrage)return;
+          this._richSnapshots.set(id,{revision:result.zeitpunkt_abfrage,data:result});
+          if(this.isConnected && selectedStopEntities(this._cfg).includes(id))this._draw();
+        })
+        .catch(()=>{ /* Keep the compact preview and retry after the cooldown. */ })
+        .finally(()=>{if(this._richRequests.get(id)===request)request.pending=false;});
+    }
   }
   set hass(value){
     const languageChanged=this._hass && languageOf(this._hass)!==languageOf(value);
     this._hass=value;
     const themeChanged=applyTransitTheme(this,value);
-    const state=mergedStopState(value,this._cfg);
+    this._refreshRichData();
+    const state=this._mergedState();
     const signature=boardDataSignature(state);
     if(languageChanged||themeChanged||signature!==this._lastDataSignature||this._lastTimeZone!==timeZoneOf(value))this._draw();
     else {this._tick();this._syncUpdated(state);}
@@ -894,7 +932,7 @@ class StopDepartureDisplay extends HTMLElement {
     } else if(key==="platform")container.appendChild(node("span","",row.steig||"–"));
     else if(key==="operator")container.appendChild(node("span","",row.verkehrsunternehmen||"–"));
     else if(key==="status"){
-      const stale=freshnessOf(mergedStopState(this._hass,cfg)).stale;
+      const stale=freshnessOf(this._mergedState()).stale;
       const quality=row.zeitqualitaet || (row.echtzeit?"realtime":"schedule");
       const status=row.ausfall?w.cancelled:stale?w.qualityStale:quality==="uncertain"?w.qualityUncertain:
         quality==="realtime"?w.realtime:w.planned;
@@ -984,7 +1022,7 @@ class StopDepartureDisplay extends HTMLElement {
       stopItems.push({item,number:index+1});
     }
     if(this._cfg.show_inline_map!==false && this._cfg.view!=="map"){
-      const attrs=mergedStopState(this._hass,this._cfg)?.attributes||{};
+      const attrs=this._mergedState()?.attributes||{};
       const points=this._mapStops(row,attrs);
       const wrapper=node("div","inlineRouteMap");
       if(points.length){
@@ -1410,7 +1448,7 @@ class StopDepartureDisplay extends HTMLElement {
   _syncDataQuality(now=Date.now()) {
     const indicator=this.shadowRoot?.querySelector(".dataQuality");
     if(!indicator)return;
-    const state=mergedStopState(this._hass,this._cfg), w=words(this._hass);
+    const state=this._mergedState(), w=words(this._hass);
     const fresh=freshnessOf(state,now);
     const rows=this._renderedRows||[];
     const isStale=fresh.stale;
@@ -1448,6 +1486,7 @@ class StopDepartureDisplay extends HTMLElement {
     target.dataset.value=signature;
   }
   _tick(){
+    this._refreshRichData();
     if(!this._hass||!this.shadowRoot||!this.shadowRoot.firstChild)return;
     const now=Date.now(),minute=Math.floor(now/60000);
     // Rebuild date labels when local midnight is crossed even without new API data.
@@ -1457,7 +1496,7 @@ class StopDepartureDisplay extends HTMLElement {
     if(this._renderedRows.some(row=>validTime(row.abfahrt) && Date.parse(row.abfahrt)<now-30000)){
       this._draw();return;
     }
-    if(freshnessOf(mergedStopState(this._hass,this._cfg),now).stale!==this._qualityWasStale){
+    if(freshnessOf(this._mergedState(),now).stale!==this._qualityWasStale){
       this._draw();return;
     }
     if(minute===this._lastMinute)return;
@@ -1479,7 +1518,7 @@ class StopDepartureDisplay extends HTMLElement {
     const focusKey=focused?.dataset?.focusKey||null;
     const focusSelection=focused?.tagName==="SELECT"?focused.value:null;
     const hass=this._hass,cfg=this._cfg,w=words(hass),locale=hass?.locale?.language||hass?.language||"de-DE";
-    const now=Date.now(),state=mergedStopState(hass,cfg),attrs=state?.attributes||{};
+    const now=Date.now(),state=this._mergedState(),attrs=state?.attributes||{};
     this._lineStyles=lineColorStyles(Array.isArray(attrs.abfahrten)?attrs.abfahrten:[]);
     this._loadFavorites();
     const sourceRows=getRows(state,cfg,now);
@@ -1967,15 +2006,40 @@ class StopDepartureDisplayEditor extends HTMLElement {
   constructor(){
     super();this.attachShadow({mode:"open"});
     this._cfg={...DEFAULTS};this._signature="";this._tab="basics";this._hass=null;this._pickerOpen=false;this._stopQuery="";
+    this._richSnapshots=new Map();this._richRequests=new Map();
   }
   setConfig(config){
     const next={...DEFAULTS,...config};delete next.show_sort;
     const signature=JSON.stringify(next);
     if(signature===this._signature)return;
-    this._cfg=next;this._signature=signature;
+    this._cfg=next;this._signature=signature;this._refreshRichData();
     const active=this.shadowRoot.activeElement;
     if(active && ["INPUT","TEXTAREA"].includes(active.tagName) && active.type!=="checkbox")return;
     this._render();
+  }
+  _mergedState(){return mergedStopState(this._hass,this._cfg,this._richSnapshots);}
+  _refreshRichData(){
+    const hass=this._hass;
+    if(!hass || typeof hass.callWS!=="function")return;
+    const ids=selectedStopEntities(this._cfg);
+    for(const id of this._richSnapshots.keys())if(!ids.includes(id))this._richSnapshots.delete(id);
+    for(const id of this._richRequests.keys())if(!ids.includes(id))this._richRequests.delete(id);
+    for(const id of ids){
+      const revision=hass.states?.[id]?.attributes?.zeitpunkt_abfrage;
+      if(!revision || this._richSnapshots.get(id)?.revision===revision)continue;
+      const previous=this._richRequests.get(id);
+      if(previous?.revision===revision&&(previous.pending||Date.now()-previous.started<60000))continue;
+      const request={revision,started:Date.now(),pending:true};this._richRequests.set(id,request);
+      Promise.resolve().then(()=>hass.callWS({type:"haltestellen_abfahrtsanzeige/get_departures",entity_id:id}))
+        .then(result=>{
+          if(!Array.isArray(result?.abfahrten)||!Array.isArray(result?.verkehrshinweise))return;
+          if(result.zeitpunkt_abfrage!==this._hass?.states?.[id]?.attributes?.zeitpunkt_abfrage)return;
+          this._richSnapshots.set(id,{revision:result.zeitpunkt_abfrage,data:result});
+          if(this.isConnected&&this._tab==="filters"&&!this.shadowRoot?.activeElement?.classList?.contains("filterSearch"))this._render();
+        })
+        .catch(()=>{ /* Compact preview remains available. */ })
+        .finally(()=>{if(this._richRequests.get(id)===request)request.pending=false;});
+    }
   }
   set hass(hass){
     const first=!this._hass;
@@ -1983,7 +2047,8 @@ class StopDepartureDisplayEditor extends HTMLElement {
     const themeChanged=applyTransitTheme(this,hass);
     const prevSignature=this._filterOptionsSignature;
     this._hass=hass;
-    const state=mergedStopState(hass,this._cfg);
+    this._refreshRichData();
+    const state=this._mergedState();
     const choices=["filter_lines","filter_destinations"].map(key=>availableFilterValues(state,key,this._cfg[key]));
     this._filterOptionsSignature=JSON.stringify(choices);
     // Refresh the filter choices when the timetable changes, but never while
@@ -2029,7 +2094,7 @@ class StopDepartureDisplayEditor extends HTMLElement {
   }
   _filterGroup(parent,key,title,t){
     const group=this._section(parent,title);
-    const state=mergedStopState(this._hass,this._cfg);
+    const state=this._mergedState();
     const options=availableFilterValues(state,key,this._cfg[key]);
     const availableCount=availableFilterValues(state,key,[]).length;
     const selected=filterValues(this._cfg[key]);
