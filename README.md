@@ -13,6 +13,10 @@
   <a href="#deutsch">Deutsch</a> · <a href="#english">English</a> · <a href="RELEASE.md">Release Notes</a>
 </p>
 
+<p align="center">
+  <a href="https://buymeacoffee.com/q14six"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" width="200"></a>
+</p>
+
 ---
 
 <a id="deutsch"></a>

@@ -4,6 +4,8 @@
 
 # Haltestellen-Abfahrtsanzeige — Release Notes
 
+<a href="https://buymeacoffee.com/q14six"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" width="200"></a>
+
 **Version `20261023.234716` · 23 October 2026 · Home Assistant 2026.9.0+**
 
 [Deutsch](#deutsch) · [English](#english) · [Documentation / Dokumentation](README.md)
