@@ -110,7 +110,7 @@ const STRINGS = {
     compact: "Kompakt", comfortable: "Normal", spacious: "Großzügig", view: "Ansicht", table: "Abfahrtstafel (Tabelle)",
     list: "Moderne Liste", monitor: "Digitaler Abfahrtsmonitor", map: "Haltestellenkarte", header: "Überschrift anzeigen", subtitleToggle: "Untertitel anzeigen",
     clock: "Aktuelle Uhrzeit", footerToggle: "Fußzeile anzeigen", updatedToggle: "Letzte Aktualisierung",
-    cancelledToggle: "Ausgefallene Busse anzeigen", scheduled: "Sollzeit bei Abweichung",
+    cancelledToggle: "Ausgefallene Fahrten anzeigen", scheduled: "Sollzeit bei Abweichung",
     lineColors: "Linien farbig kennzeichnen", sortBy: "Standardsortierung", sortDirection: "Sortierreihenfolge",
     ascending: "Aufsteigend", descending: "Absteigend",
     fallback: "Bitte Haltestelle wählen", noSensors: "Keine Abfahrtssensoren gefunden",
@@ -152,13 +152,13 @@ const STRINGS = {
     disruptionsTitle: "Service alerts", disruptionsOld: "Last known status – information may be outdated", disruptionsCount: "Notices",
     updated: "Updated", hr: "hr", min: "min", noData: "–", stops: "Departures", tomorrow: "Tomorrow",
     sections: ["Stop", "Appearance", "Your texts", "Visible columns", "Column names", "Additional details", "Sorting"],
-    sectionNotes: ["Select a bus-stop sensor", "Choose the layout of the board", "Write any headings and labels", "Display only what you need", "Rename every column", "Further information and indicators", "Default sorting for departures"],
+    sectionNotes: ["Select a stop sensor", "Choose the layout of the board", "Write any headings and labels", "Display only what you need", "Rename every column", "Further information and indicators", "Default sorting for departures"],
     stopSensor: "Choose stop", title: "Heading", subtitle: "Subtitle", headingText: "Small heading",
     footer: "Footer text", emptyText: "Message when empty", rows: "Departures shown", density: "Row height",
     compact: "Compact", comfortable: "Regular", spacious: "Spacious", view: "Layout", table: "Departure board (table)",
     list: "Modern list", monitor: "Digital departure monitor", map: "Route map", header: "Show heading", subtitleToggle: "Show subtitle", clock: "Current time",
     footerToggle: "Show footer", updatedToggle: "Last update",
-    cancelledToggle: "Show cancelled buses", scheduled: "Show scheduled time if changed",
+    cancelledToggle: "Show cancelled departures", scheduled: "Show scheduled time if changed",
     lineColors: "Color-code lines", sortBy: "Default sort", sortDirection: "Sort order",
     ascending: "Ascending", descending: "Descending",
     fallback: "Choose a stop", noSensors: "No compatible sensors found",
@@ -1871,8 +1871,8 @@ const EDITOR_WORDS = {
     searchStops:"Haltestellen suchen …",clearStops:"Auswahl aufheben",
     eyebrow:"DASHBOARD",title:"Abfahrtstafel gestalten",subtitle:"Alle Einstellungen für diese Karte",
     basics:"Grundlagen",filters:"Schnellfilter",text:"Beschriftung",columns:"Spalten",trips:"Fahrtverlauf",more:"Optionen",
-    filtersTitle:"Linien und Fahrtziele",filtersSub:"Wähle, welche Busse diese Karte zeigt. Der Sensor bleibt unverändert.",
-    filterLines:"Buslinien",filterDestinations:"Fahrtziele und Richtungen",
+    filtersTitle:"Linien und Fahrtziele",filtersSub:"Wähle, welche Abfahrten diese Karte zeigt. Der Sensor bleibt unverändert.",
+    filterLines:"Linien",filterDestinations:"Fahrtziele und Richtungen",
     filterAll:"Alle anzeigen",filterSearch:"Einträge durchsuchen …",filterAvailable:"Aktuell verfügbar",filterSelected:"Ausgewählt",
     filterNoOptions:"Derzeit keine Abfahrten zur Auswahl vorhanden.",
     filterHint:"Ohne Auswahl werden alle angezeigt. Beide Filter wirken zusammen. Erst filtern, dann die nächsten Abfahrten auswählen und sortieren.",
@@ -1959,8 +1959,8 @@ const EDITOR_WORDS = {
     searchStops:"Search stops …",clearStops:"Clear selection",
     eyebrow:"DASHBOARD",title:"Customize departure board",subtitle:"All settings for this card",
     basics:"Basics",filters:"Quick filters",text:"Labels",columns:"Columns",trips:"Trip details",more:"Options",
-    filtersTitle:"Lines and destinations",filtersSub:"Choose which buses this card displays. The sensor remains unchanged.",
-    filterLines:"Bus lines",filterDestinations:"Destinations and directions",
+    filtersTitle:"Lines and destinations",filtersSub:"Choose which departures this card displays. The sensor remains unchanged.",
+    filterLines:"Lines",filterDestinations:"Destinations and directions",
     filterAll:"Show all",filterSearch:"Search entries …",filterAvailable:"Currently available",filterSelected:"Selected",
     filterNoOptions:"No departures available to select right now.",
     filterHint:"No selection means show all. Both filters are combined. Filter first, then select and sort the next departures.",
@@ -2359,6 +2359,6 @@ class StopDepartureDisplayEditor extends HTMLElement {
 if(!customElements.get(BOARD_TYPE))customElements.define(BOARD_TYPE,StopDepartureDisplay);
 if(!customElements.get(`${BOARD_TYPE}-editor`))customElements.define(`${BOARD_TYPE}-editor`,StopDepartureDisplayEditor);
 window.customCards=window.customCards||[];
-if(!window.customCards.some(card=>card.type===BOARD_TYPE))window.customCards.push({type:BOARD_TYPE,name:"Haltestellen-Abfahrtsanzeige / Stop Departure Display",description:"Bus-Abfahrten / Bus departures · DE / EN · Table, list, monitor, map",preview:true});
+if(!window.customCards.some(card=>card.type===BOARD_TYPE))window.customCards.push({type:BOARD_TYPE,name:"Haltestellen-Abfahrtsanzeige / Stop Departure Display",description:"Abfahrten / Departures · DE / EN · Table, list, monitor, map",preview:true});
 
 /* Custom footer and last-update status are independently configurable. */
