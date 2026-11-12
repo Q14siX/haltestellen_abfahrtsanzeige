@@ -13,14 +13,15 @@
         "title": "Choose a stop",
         "description": "Found {count} stops near {town}. Choose one stop.",
         "data": {
-          "stop_id": "Bus stop"
+          "stop_id": "Stop"
         }
       },
       "confirm": {
         "title": "Add departure board",
         "description": "Departures from {stop}",
         "data": {
-          "name": "Sensor name"
+          "name": "Sensor name",
+          "transport_types": "Transport modes"
         }
       }
     },
@@ -29,7 +30,8 @@
       "no_stops": "No stops found for this town.",
       "invalid_search": "Please enter at least two characters.",
       "invalid_stop": "Select a stop from the list.",
-      "invalid_name": "Please enter a sensor name."
+      "invalid_name": "Please enter a sensor name.",
+      "no_transport_types": "Select at least one transport mode."
     },
     "abort": {
       "already_configured": "This stop is already configured."
@@ -41,12 +43,17 @@
         "title": "Departure board",
         "data": {
           "board_size": "Maximum departures to fetch",
-          "refresh_mode": "Refresh mode"
+          "refresh_mode": "Refresh mode",
+          "transport_types": "Transport modes"
         },
         "data_description": {
-          "refresh_mode": "Automatically adjusts how frequently this stop is queried. After errors, the interval is extended regardless of mode."
+          "refresh_mode": "Automatically adjusts how frequently this stop is queried. After errors, the interval is extended regardless of mode.",
+          "transport_types": "Choose which transport modes to fetch for this stop."
         }
       }
+    },
+    "error": {
+      "no_transport_types": "Select at least one transport mode."
     }
   },
   "exceptions": {
@@ -55,15 +62,15 @@
   "triggers": {
     "departure_soon": {
       "name": "Departure is approaching",
-      "description": "Triggers once for each upcoming bus when the chosen number of minutes remains.",
+      "description": "Triggers once for each upcoming service when the chosen number of minutes remains.",
       "fields": {
         "entity_id": {
           "name": "Departure sensor",
           "description": "Select a stop sensor provided by this integration."
         },
         "line": {
-          "name": "Bus line (optional)",
-          "description": "Exact bus line number; leave blank for every line."
+          "name": "Line (optional)",
+          "description": "Exact line number; leave blank for every line."
         },
         "destination": {
           "name": "Destination contains (optional)",
@@ -77,15 +84,15 @@
     },
     "delay_reached": {
       "name": "Delay threshold reached",
-      "description": "Triggers when a bus is newly reported with at least the chosen delay.",
+      "description": "Triggers when a service is newly reported with at least the chosen delay.",
       "fields": {
         "entity_id": {
           "name": "Departure sensor",
           "description": "Select a stop sensor provided by this integration."
         },
         "line": {
-          "name": "Bus line (optional)",
-          "description": "Exact bus line number; leave blank for every line."
+          "name": "Line (optional)",
+          "description": "Exact line number; leave blank for every line."
         },
         "destination": {
           "name": "Destination contains (optional)",
@@ -98,16 +105,16 @@
       }
     },
     "trip_cancelled": {
-      "name": "Bus departure cancelled",
-      "description": "Triggers when an upcoming bus is newly reported as cancelled.",
+      "name": "Departure cancelled",
+      "description": "Triggers when an upcoming service is newly reported as cancelled.",
       "fields": {
         "entity_id": {
           "name": "Departure sensor",
           "description": "Select a stop sensor provided by this integration."
         },
         "line": {
-          "name": "Bus line (optional)",
-          "description": "Exact bus line number; leave blank for every line."
+          "name": "Line (optional)",
+          "description": "Exact line number; leave blank for every line."
         },
         "destination": {
           "name": "Destination contains (optional)",
@@ -122,6 +129,18 @@
         "adaptive": "Adaptive (1–10 minutes)",
         "economy": "Economy (2–12 minutes)",
         "fixed": "Fixed (5 minutes)"
+      }
+    },
+    "transport_types": {
+      "options": {
+        "bus": "Bus",
+        "coach": "Coach",
+        "tram": "Tram",
+        "suburban": "Suburban rail",
+        "subway": "Subway",
+        "regional_rail": "Regional rail",
+        "long_distance_rail": "Long-distance rail",
+        "ferry": "Ferry"
       }
     }
   }
