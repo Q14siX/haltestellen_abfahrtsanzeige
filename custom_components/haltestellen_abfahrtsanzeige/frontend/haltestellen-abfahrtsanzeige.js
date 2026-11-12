@@ -63,7 +63,7 @@ const COLUMNS = [
 ];
 const DEFAULTS = {
   type: `custom:${BOARD_TYPE}`, entity: "", entities: [], title: "", subtitle: "", footer_text: "",
-  heading_text: "", empty_text: "", max_rows: 15, density: "comfortable", view: "table",
+  heading_text: "", empty_text: "", max_rows: 15, density: "comfortable", view: "table", use_home_assistant_theme: false,
   label_line: "", label_destination: "", label_departure: "", label_countdown: "",
   label_delay: "", label_platform: "", label_status: "", label_operator: "",
   show_header: true, show_subtitle: true, show_clock: true, show_footer: true,
@@ -432,7 +432,7 @@ function sortRows(rows, key, direction, now = Date.now()) {
 // Keep foreground, background and controls coherent even when a custom HA theme
 // exposes conflicting --ha-card-background and --primary-text-color variables.
 const THEME_CSS = `
-:host{--transit-paper:#ffffff;--transit-ink:#172638;--transit-muted:#526579;
+:host(:not([data-use-ha-theme])){--transit-paper:#ffffff;--transit-ink:#172638;--transit-muted:#526579;
   --transit-surface:#f0f4f9;--transit-border:#d4dee9;--transit-accent:#2165b5;
   --primary-text-color:var(--transit-ink);--secondary-text-color:var(--transit-muted);
   --card-background-color:var(--transit-paper);--ha-card-background:var(--transit-paper);
@@ -440,12 +440,12 @@ const THEME_CSS = `
   --primary-color:var(--transit-accent);--transit-accent-ink:#ffffff;
   --success-color:#087452;--error-color:#b4233b;
   color:var(--transit-ink);color-scheme:light}
-:host([data-transit-theme="dark"]){--transit-paper:#17283b;--transit-ink:#f3f7fc;
+:host([data-transit-theme="dark"]:not([data-use-ha-theme])){--transit-paper:#17283b;--transit-ink:#f3f7fc;
   --transit-muted:#becfe2;--transit-surface:#23364a;--transit-border:#41566c;
   --transit-accent:#85bfff;--transit-accent-ink:#13243a;
   --success-color:#74e5bc;--error-color:#ff999c;
   color-scheme:dark}
-:host ha-card.monitor,:host(:fullscreen) ha-card{
+:host ha-card.monitor,:host(:fullscreen:not([data-use-ha-theme])) ha-card{
   --primary-text-color:#f3f8fe;--secondary-text-color:#bacfe2;
   --card-background-color:#10283b;--secondary-background-color:#1a3852;
   --divider-color:#37556d;--primary-color:#ffd36f;
@@ -654,13 +654,13 @@ tr:hover td{background:var(--secondary-background-color,rgba(110,130,150,.04))}t
 .quickFavList{display:flex;align-items:center;gap:6px;flex-wrap:wrap;max-height:105px;overflow-y:auto}
 .quickFavLabel{font-size:11px;opacity:.8;margin-right:5px}.quickFavButton{padding:5px 9px;min-height:30px;font-size:12px}
 .quickFilters button:focus-visible,.quickFilters select:focus-visible{outline:2px solid var(--primary-color,#397ccf);outline-offset:2px}
-.monitor .quickFilters,:host(:fullscreen) .quickFilters{color:#eff7ff;background:#132c42;border-color:#36516b}
-.monitor .quickFilters button,.monitor .quickFilters select,:host(:fullscreen) .quickFilters button,:host(:fullscreen) .quickFilters select{background:#213b54;color:#f1f7ff;border-color:#4b6782}
+.monitor .quickFilters,:host(:fullscreen:not([data-use-ha-theme])) .quickFilters{color:#eff7ff;background:#132c42;border-color:#36516b}
+.monitor .quickFilters button,.monitor .quickFilters select,:host(:fullscreen:not([data-use-ha-theme])) .quickFilters button,:host(:fullscreen:not([data-use-ha-theme])) .quickFilters select{background:#213b54;color:#f1f7ff;border-color:#4b6782}
 @media(max-width:580px){.quickFilters{padding:10px 12px}.quickControls{gap:7px}}
 
 /* Fullscreen and kiosk display: fullscreen is activated only by the user's click. */
-:host(:fullscreen){display:block!important;box-sizing:border-box;width:100vw!important;height:100vh!important;overflow:auto!important;background:#091a29!important;padding:clamp(8px,1.4vw,24px)!important;color:#fff;}
-:host(:fullscreen) ha-card{min-height:calc(100vh - 48px);margin:0 auto;max-width:1800px;background:#0e2335;color:#f3f7ff;border-radius:16px;}
+:host(:fullscreen){display:block!important;box-sizing:border-box;width:100vw!important;height:100vh!important;overflow:auto!important;background:var(--board-fullscreen-background,#091a29)!important;padding:clamp(8px,1.4vw,24px)!important;color:var(--board-fullscreen-text,#fff);}
+:host(:fullscreen) ha-card{min-height:calc(100vh - 48px);margin:0 auto;max-width:1800px;background:var(--board-fullscreen-card,#0e2335);color:var(--board-fullscreen-text,#f3f7ff);border-radius:16px;}
 :host(:fullscreen) .hero{padding:clamp(20px,3vw,48px)}
 :host(:fullscreen) .title{font-size:clamp(27px,3.5vw,55px)}
 :host(:fullscreen) .clock{font-size:clamp(20px,2.1vw,36px)}
@@ -671,10 +671,16 @@ tr:hover td{background:var(--secondary-background-color,rgba(110,130,150,.04))}t
 :host(:fullscreen) .listTime{font-size:clamp(21px,2vw,36px)}
 .screenActions{position:absolute;top:8px;right:8px;z-index:5;display:flex;justify-content:flex-end}
 ha-card{position:relative}
+:host([data-use-ha-theme]){
+  --board-fullscreen-background:var(--primary-background-color,#fff);
+  --board-fullscreen-card:var(--ha-card-background,var(--card-background-color,#fff));
+  --board-fullscreen-text:var(--primary-text-color,#1d293c);
+}
 .fullscreenToggle{background:var(--secondary-background-color,#edf2f7);color:var(--primary-text-color,#173044);border:1px solid var(--divider-color,#bdc8d2);border-radius:9px;padding:7px 11px;font:inherit;font-size:12px;cursor:pointer;min-height:34px}
 .fullscreenToggle:hover{filter:brightness(.94)}
 .fullscreenToggle:focus-visible{outline:3px solid var(--primary-color,#1687d9);outline-offset:2px}
-:host(:fullscreen) .fullscreenToggle{background:#24425c;color:#fff;border-color:#55708a;font-size:14px;padding:10px 15px}
+:host(:fullscreen) .fullscreenToggle{font-size:14px;padding:10px 15px}
+:host(:fullscreen:not([data-use-ha-theme])) .fullscreenToggle{background:#24425c;color:#fff;border-color:#55708a}
 .kiosk .eyebrow,.kiosk .subtitle{display:none}
 .kiosk .hero{padding:20px 24px}
 .kiosk .title{font-size:clamp(24px,2.7vw,40px)}
@@ -1548,7 +1554,10 @@ class StopDepartureDisplay extends HTMLElement {
     this._tableObserver?.disconnect();this._tableObserver=null;
     root.replaceChildren();
     const style=node("style");style.textContent=THEME_CSS+BOARD_CSS;root.appendChild(style);
-    const card=node("ha-card",`${cfg.density}${cfg.view==="monitor" || cfg.kiosk_mode?" monitor":""}${cfg.kiosk_mode?" kiosk":""}`);root.appendChild(card);
+    const useHaTheme=cfg.use_home_assistant_theme===true;
+    this.toggleAttribute("data-use-ha-theme",useHaTheme);
+    const monitor=!useHaTheme && (cfg.view==="monitor" || cfg.kiosk_mode);
+    const card=node("ha-card",`${cfg.density}${monitor?" monitor":""}${cfg.kiosk_mode?" kiosk":""}`);root.appendChild(card);
     card.setAttribute("role","region");
     card.setAttribute("aria-label",cfg.title||attrs.haltestelle||attrs.friendly_name||w.noStop);
     if(cfg.show_fullscreen_button!==false){
@@ -1879,7 +1888,7 @@ const EDITOR_WORDS = {
     basicsTitle:"Haltestelle und Ansicht",basicsSub:"Haltestellen, Darstellung und Anzahl der Abfahrten",
     sensorSection:"Haltestellen auswählen",viewSection:"Darstellung auswählen",rowsSection:"Angezeigte Abfahrten",
     pickStop:"Haltestellen auswählen",noSensors:"Keine passenden Sensoren gefunden",chooseStop:"Haltestellen auswählen",
-    table:"Tabelle",list:"Liste",monitor:"Digitalanzeige",map:"Karte",rows:"Anzahl der Abfahrten",density:"Zeilenabstand",
+    table:"Tabelle",list:"Liste",monitor:"Digitalanzeige",map:"Karte",rows:"Anzahl der Abfahrten",density:"Zeilenabstand",haTheme:"Home-Assistant-Theme übernehmen",
     compact:"Kompakt",comfortable:"Normal",spacious:"Großzügig",
     textsTitle:"Texte und Kopfbereich",textsSub:"Beschriftungen und zusätzliche Informationen individuell festlegen",
     titleSection:"Überschrift",subtitleSection:"Untertitel",footerSection:"Fußzeile",emptySection:"Leere Abfahrtstafel",
@@ -1967,7 +1976,7 @@ const EDITOR_WORDS = {
     basicsTitle:"Stop and appearance",basicsSub:"Stops, display layout and number of departures",
     sensorSection:"Select stops",viewSection:"Choose display layout",rowsSection:"Displayed departures",
     pickStop:"Select stop sensors",noSensors:"No compatible sensors found",chooseStop:"Select stops",
-    table:"Table",list:"List",monitor:"Digital display",map:"Map",rows:"Number of departures",density:"Row spacing",
+    table:"Table",list:"List",monitor:"Digital display",map:"Map",rows:"Number of departures",density:"Row spacing",haTheme:"Use Home Assistant theme",
     compact:"Compact",comfortable:"Regular",spacious:"Spacious",
     textsTitle:"Labels and header",textsSub:"Customize headings and additional information",
     titleSection:"Heading",subtitleSection:"Subtitle",footerSection:"Footer",emptySection:"Empty departure board",
@@ -2234,7 +2243,7 @@ class StopDepartureDisplayEditor extends HTMLElement {
       const amount=this._section(body,t.rowsSection,null,true),fields=node("div","two");amount.append(fields);
       this._field(fields,"max_rows",t.rows,{number:true,min:1,max:80});
       this._field(fields,"density",t.density,{choices:[["compact",t.compact],["comfortable",t.comfortable],["spacious",t.spacious]]});
-      switches(this._section(body,t.displayMode,null,true),[["kiosk_mode",t.kioskDisplay]]);
+      switches(this._section(body,t.displayMode,null,true),[["kiosk_mode",t.kioskDisplay],["use_home_assistant_theme",t.haTheme]]);
     }else if(this._tab==="visibility"){
       const body=this._panel(page,t.visibilityTitle,t.visibilitySub);
       const header=this._section(body,t.titleSection);

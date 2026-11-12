@@ -116,6 +116,8 @@ Im Editor stehen sechs übersichtliche Einstellungsbereiche zur Verfügung:
 
 Die Optionen hängen von der gewählten Ansicht ab. Nicht benötigte untergeordnete Einstellungen werden automatisch ausgeblendet. Du kannst zum Beispiel die **gesamte Schnellfilter-Leiste deaktivieren**, ohne die zuvor gespeicherten Favoriten zu verlieren. Ausgeblendete Schnellfilter filtern die Anzeige nicht heimlich weiter.
 
+Aktiviere unter **Grundlagen → Home-Assistant-Theme übernehmen** die Farben deines Dashboards. Die Linienfarben lassen sich weiterhin separat einstellen. In YAML entspricht das `use_home_assistant_theme: true`.
+
 #### Kartenansichten
 
 | `view` | Darstellung |
@@ -330,6 +332,8 @@ The visual editor organizes its options into six sections:
 | **Labels** | Custom titles, subtitles, and empty-state text |
 
 Options are context-sensitive: irrelevant subordinate settings stay hidden. For example, you can **disable the entire quick-filter bar** while retaining saved favorites. Hidden quick filters do not keep filtering departures in the background.
+
+Enable **Basics → Use Home Assistant theme** to use your dashboard colors. Route badge colors remain independently configurable. The YAML equivalent is `use_home_assistant_theme: true`.
 
 #### Card views
 
