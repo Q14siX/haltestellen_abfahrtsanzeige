@@ -4,6 +4,22 @@ from datetime import timedelta
 DOMAIN = "haltestellen_abfahrtsanzeige"
 API_BASE = "https://api.transitous.org"
 API_TIMEOUT = 25
+CONF_TRANSPORT_TYPES = "transport_types"
+TRANSPORT_MODES = {
+    "bus": ("BUS",),
+    "coach": ("COACH",),
+    "tram": ("TRAM",),
+    "suburban": ("SUBURBAN",),
+    "subway": ("SUBWAY",),
+    "regional_rail": ("REGIONAL_RAIL", "REGIONAL_FAST_RAIL"),
+    "long_distance_rail": ("LONG_DISTANCE", "HIGHSPEED_RAIL", "NIGHT_RAIL"),
+    "ferry": ("FERRY",),
+}
+DEPARTURE_MODES = tuple(mode for modes in TRANSPORT_MODES.values() for mode in modes)
+DEFAULT_TRANSPORT_TYPES = ("bus", "coach")
+DEFAULT_DEPARTURE_MODES = tuple(
+    mode for kind in DEFAULT_TRANSPORT_TYPES for mode in TRANSPORT_MODES[kind]
+)
 CITY_SEARCH_RADIUS_KM = 12.0
 UPDATE_INTERVAL = timedelta(minutes=5)
 CONF_REFRESH_MODE = "refresh_mode"

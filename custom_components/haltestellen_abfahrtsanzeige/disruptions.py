@@ -9,6 +9,8 @@ import hashlib
 from collections.abc import Mapping
 from typing import Any
 
+from .const import DEPARTURE_MODES
+
 MAJOR_DELAY_MINUTES = 10
 MAX_NOTICES = 20
 
@@ -91,7 +93,7 @@ def collect_disruptions(raw: dict[str, Any], departures: list[dict[str, Any]],
         for event in events:
             if not isinstance(event, Mapping):
                 continue
-            if str(event.get("mode", "")).upper() not in ("BUS", "COACH"):
+            if str(event.get("mode", "")).strip().upper() not in DEPARTURE_MODES:
                 continue
             line = str(event.get("routeShortName") or event.get("displayName") or "").strip()[:60]
             results.extend(_provider_notices(event, language, line=line))

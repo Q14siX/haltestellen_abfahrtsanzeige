@@ -5,8 +5,8 @@
 <h1 align="center">Haltestellen-Abfahrtsanzeige</h1>
 
 <p align="center">
-  <strong>Deine Busabfahrten. Dein Dashboard. Deine Ansicht.</strong><br>
-  <em>Your bus departures. Your dashboard. Your way.</em>
+  <strong>Deine Abfahrten. Dein Dashboard. Deine Ansicht.</strong><br>
+  <em>Your departures. Your dashboard. Your way.</em>
 </p>
 
 <p align="center">
@@ -22,9 +22,9 @@
 <a id="deutsch"></a>
 ## 🇩🇪 Deutsch
 
-### Busabfahrten direkt in Home Assistant
+### Abfahrten direkt in Home Assistant
 
-**Haltestellen-Abfahrtsanzeige** ist eine quelloffene Home-Assistant-Integration für die nächsten Bus- und Fernbusabfahrten. Sie nutzt die öffentliche [Transitous](https://transitous.org/)-Schnittstelle und kombiniert aktuelle Fahrplandaten mit einem individuell gestaltbaren Dashboard, Sensoren und Automationsauslösern.
+**Haltestellen-Abfahrtsanzeige** ist eine quelloffene Home-Assistant-Integration für die nächsten Abfahrten von Bus, Straßenbahn, Zügen und weiteren Verkehrsmitteln. Sie nutzt die öffentliche [Transitous](https://transitous.org/)-Schnittstelle und kombiniert aktuelle Fahrplandaten mit einem individuell gestaltbaren Dashboard, Sensoren und Automationsauslösern.
 
 Richte jede gewünschte Haltestelle einmal in Home Assistant ein und wähle anschließend **einen oder mehrere Haltestellen-Sensoren direkt im Karteneditor** aus. Die Abfahrten werden zu einer gemeinsamen, zeitlich geordneten Anzeige zusammengeführt. Eine gesonderte Haupt-Haltestelle oder feste Fahrtrichtung ist nicht erforderlich.
 
@@ -93,7 +93,10 @@ Die Verzeichnisstruktur muss danach so aussehen:
 2. Suche nach **Haltestellen-Abfahrtsanzeige**.
 3. Gib den gewünschten Ort ein, zum Beispiel **Hamburg**.
 4. Wähle eine angebotene Haltestelle und lege einen Namen fest.
-5. Wiederhole die Einrichtung für weitere Haltestellen.
+5. Wähle beim Bestätigen die **Verkehrsmittel** für diese Haltestelle. Die von Transitous gemeldeten Verkehrsmittel sind vorausgewählt.
+6. Wiederhole die Einrichtung für weitere Haltestellen.
+
+Die Auswahl lässt sich später über die Optionen des jeweiligen Integrationseintrags ändern. Bei bestehenden Einträgen ohne gespeicherte Auswahl gelten zunächst Bus und Fernbus. Für einen Bahnhof kannst du beispielsweise S-Bahn, U-Bahn, Regional- und Fernzüge gemeinsam wählen. Führt Transitous einzelne Haltepunkte als separate Haltestellen, kannst du sie als eigene Einträge einrichten und in einer Karte zusammenführen.
 
 Pro eingerichteter Haltestelle erstellt Home Assistant einen eigenen Abfahrtssensor. Die konkrete Entitäts-ID findest Du unter **Entwicklerwerkzeuge → Zustände**.
 
@@ -237,9 +240,9 @@ Der Quellcode dieser Integration steht unter der [MIT-Lizenz](LICENSE). Die Lize
 <a id="english"></a>
 ## 🇬🇧 English
 
-### Bus departures inside Home Assistant
+### Departures inside Home Assistant
 
-**Haltestellen-Abfahrtsanzeige (Bus Stop Departure Board)** is an open-source Home Assistant integration for upcoming local and long-distance bus departures. It uses the public [Transitous](https://transitous.org/) API and brings timetable data together with a customizable dashboard, sensors, and automation triggers.
+**Haltestellen-Abfahrtsanzeige (Bus Stop Departure Board)** is an open-source Home Assistant integration for upcoming departures by bus, tram, rail and other transport modes. It uses the public [Transitous](https://transitous.org/) API and brings timetable data together with a customizable dashboard, sensors, and automation triggers.
 
 Configure each stop once in Home Assistant, then select **one or more stop sensors directly in the visual card editor**. Departures are combined into a single chronological board. No separate primary stop or fixed travel direction is required.
 
@@ -308,7 +311,10 @@ The installed structure should look like this:
 2. Search for **Haltestellen-Abfahrtsanzeige**.
 3. Enter a city, for example **Hamburg**.
 4. Select a stop returned by the provider and enter a name.
-5. Repeat to configure more stops.
+5. Select the **transport modes** for this stop on the confirmation screen. Modes reported by Transitous are preselected.
+6. Repeat setup for additional stops.
+
+You can change the selection later in the options for the integration entry. Existing entries without a saved selection initially use bus and coach. If Transitous lists nearby platforms as separate stops, configure them separately and combine their sensors in one card.
 
 Home Assistant creates a separate departure sensor for each configured stop. Find the actual entity ID in **Developer tools → States**.
 

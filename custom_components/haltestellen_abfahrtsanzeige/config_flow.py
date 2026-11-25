@@ -14,9 +14,19 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .api import TransitousClient, TransitousError
 from .const import (
     ALLOWED_BOARD_SIZES, ALLOWED_REFRESH_MODES, CONF_BOARD_SIZE, CONF_REFRESH_MODE,
-    DEFAULT_REFRESH_MODE, CONF_NAME, CONF_SEARCH,
-    CONF_STOP_ID, CONF_STOP_NAME, DEFAULT_BOARD_SIZE, DOMAIN,
+    DEFAULT_REFRESH_MODE, CONF_NAME, CONF_SEARCH, CONF_TRANSPORT_TYPES,
+    CONF_STOP_ID, CONF_STOP_NAME, DEFAULT_BOARD_SIZE, DEFAULT_TRANSPORT_TYPES,
+    DOMAIN, TRANSPORT_MODES,
 )
+
+
+def _transport_selector() -> selector.SelectSelector:
+    return selector.SelectSelector(selector.SelectSelectorConfig(
+        options=list(TRANSPORT_MODES),
+        translation_key=CONF_TRANSPORT_TYPES,
+        mode=selector.SelectSelectorMode.DROPDOWN,
+        multiple=True,
+    ))
 
 
 class BusTimetableFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -81,12 +91,20 @@ class BusTimetableFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_confirm(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         if self._stop is None:
             return await self.async_step_user()
+        available_modes = set(self._stop["modes"])
+        transport_types = [
+            kind for kind, modes in TRANSPORT_MODES.items()
+            if available_modes.intersection(modes)
+        ] or list(DEFAULT_TRANSPORT_TYPES)
         errors: dict[str, str] = {}
         if user_input is not None:
+            transport_types = user_input[CONF_TRANSPORT_TYPES]
+            if not transport_types:
+                errors[CONF_TRANSPORT_TYPES] = "no_transport_types"
             name = str(user_input.get(CONF_NAME, "")).strip()
             if not name:
                 errors[CONF_NAME] = "invalid_name"
-            else:
+            if not errors:
                 await self.async_set_unique_id(self._stop["id"])
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
@@ -95,31 +113,47 @@ class BusTimetableFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_STOP_ID: self._stop["id"],
                         CONF_STOP_NAME: self._stop["name"],
                         CONF_NAME: name,
+                        CONF_TRANSPORT_TYPES: transport_types,
                         "stop_lat": self._stop["lat"],
                         "stop_lon": self._stop["lon"],
                     },
                 )
         return self.async_show_form(
             step_id="confirm",
-            data_schema=vol.Schema({vol.Required(
-                CONF_NAME, default=self._stop["name"]
-            ): selector.TextSelector()}),
+            data_schema=vol.Schema({
+                vol.Required(CONF_NAME, default=self._stop["name"]): selector.TextSelector(),
+                vol.Required(
+                    CONF_TRANSPORT_TYPES, default=transport_types,
+                ): _transport_selector(),
+            }),
             description_placeholders={"stop": self._stop["name"]},
             errors=errors,
         )
 
 
 class BusTimetableOptionsFlow(config_entries.OptionsFlow):
-    """Control the departure limit and adaptive poll cadence for a stop."""
+    """Configure a stop’s departure modes, limit and polling cadence."""
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        errors: dict[str, str] = {}
+        entry = self.config_entry
+        transport_types = entry.options.get(
+            CONF_TRANSPORT_TYPES, entry.data.get(CONF_TRANSPORT_TYPES, list(DEFAULT_TRANSPORT_TYPES)),
+        )
         if user_input is not None:
-            return self.async_create_entry(data={
-                CONF_BOARD_SIZE: int(user_input[CONF_BOARD_SIZE]),
-                CONF_REFRESH_MODE: user_input[CONF_REFRESH_MODE],
-            })
+            transport_types = user_input[CONF_TRANSPORT_TYPES]
+            if transport_types:
+                return self.async_create_entry(data={
+                    **entry.options,
+                    CONF_BOARD_SIZE: int(user_input[CONF_BOARD_SIZE]),
+                    CONF_REFRESH_MODE: user_input[CONF_REFRESH_MODE],
+                    CONF_TRANSPORT_TYPES: transport_types,
+                })
+            errors[CONF_TRANSPORT_TYPES] = "no_transport_types"
         return self.async_show_form(
             step_id="init",
+            errors=errors,
             data_schema=vol.Schema({
+                vol.Required(CONF_TRANSPORT_TYPES, default=transport_types): _transport_selector(),
                 vol.Required(
                     CONF_BOARD_SIZE,
                     default=self.config_entry.options.get(CONF_BOARD_SIZE, DEFAULT_BOARD_SIZE),

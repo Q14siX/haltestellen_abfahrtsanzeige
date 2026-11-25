@@ -1,4 +1,4 @@
-"""Transitous/MOTIS client for town-wide stop selection and bus journeys."""
+"""Transitous/MOTIS client for town-wide stop selection and departures."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from typing import Any
 
 from aiohttp import ClientError, ClientSession, ClientTimeout
 
-from .const import API_BASE, API_TIMEOUT, CITY_SEARCH_RADIUS_KM, VERSION
+from .const import API_BASE, API_TIMEOUT, CITY_SEARCH_RADIUS_KM, DEFAULT_DEPARTURE_MODES, VERSION
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -175,7 +175,7 @@ class TransitousClient:
         longitudes = sorted(lon for _, lon in points)
         return latitudes[len(points) // 2], longitudes[len(points) // 2]
 
-    async def list_city_stops(self, town: str) -> list[dict[str, str]]:
+    async def list_city_stops(self, town: str) -> list[dict[str, Any]]:
         """Fetch ALL stops returned for a town area, rather than geocode suggestions.
 
         The town is used to resolve a point, and the real stop inventory is
@@ -247,13 +247,16 @@ class TransitousClient:
                 continue
             name = name.strip()
             canonical_id = cls._parent_stop_id(place)
+            raw_modes = place.get("modes")
+            modes = {mode for mode in raw_modes if isinstance(mode, str)} if isinstance(raw_modes, list) else set()
             existing = grouped.get(canonical_id)
             if existing is None:
                 grouped[canonical_id] = {
                     "id": stop_id.strip(), "name": name, "label": name,
-                    "lat": position[0], "lon": position[1], "_count": 1, "group_id": canonical_id,
+                    "lat": position[0], "lon": position[1], "_count": 1, "group_id": canonical_id, "modes": modes,
                 }
             else:
+                existing["modes"].update(modes)
                 count = existing["_count"]
                 existing["lat"] = (existing["lat"] * count + position[0]) / (count + 1)
                 existing["lon"] = (existing["lon"] * count + position[1]) / (count + 1)
@@ -264,6 +267,7 @@ class TransitousClient:
         by_name: dict[str, list[dict[str, Any]]] = {}
         for stop in grouped.values():
             stop.pop("_count", None)
+            stop["modes"] = sorted(stop["modes"])
             by_name.setdefault(stop["name"].casefold(), []).append(stop)
         for same_name in by_name.values():
             if len(same_name) > 1:
@@ -313,8 +317,9 @@ class TransitousClient:
     async def get_departures(
         self, stop_id: str, position: tuple[float, float] | None = None,
         count: int = 40,
+        *, modes: tuple[str, ...] = DEFAULT_DEPARTURE_MODES,
     ) -> dict[str, Any]:
-        """Get all forthcoming BUS/COACH departures, not route itineraries.
+        """Get forthcoming departures for the selected modes.
 
         StopTimes collects the station and its child platforms. A small optional
         radius covers the opposite roadside pole. arriveBy=false requests departures.
@@ -322,7 +327,7 @@ class TransitousClient:
         params: dict[str, Any] = {
             "stopId": stop_id,
             "arriveBy": "false",
-            "mode": "BUS,COACH",
+            "mode": ",".join(modes),
             "n": max(20, min(int(count), 80)),
             "language": self._language,
             # MOTIS provides following stops in each departure event; no per-trip calls.

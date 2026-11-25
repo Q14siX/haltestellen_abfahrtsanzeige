@@ -20,7 +20,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import TransitousClient, TransitousError
-from .const import DOMAIN
+from .const import DEPARTURE_MODES, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 _CACHE_TTL = timedelta(minutes=20)
@@ -180,12 +180,12 @@ def _simplify(points: list[tuple[float, float]]) -> list[list[float]]:
 
 
 def geometry_from_itinerary(payload: Any, row: Mapping[str, Any]) -> list[list[float]]:
-    """Accept only MOTIS bus/coach leg shapes for the requested trip."""
+    """Accept only MOTIS transit leg shapes for the requested trip."""
     if not isinstance(payload, Mapping) or not isinstance(payload.get("legs"), list):
         return []
     trip_id = row.get("fahrt_id")
     candidates = [leg for leg in payload["legs"] if isinstance(leg, Mapping)
-                  and leg.get("mode") in ("BUS", "COACH")]
+                  and leg.get("mode") in DEPARTURE_MODES]
     matches = [leg for leg in candidates if leg.get("tripId") == trip_id]
     # Some MOTIS versions do not repeat the opaque trip ID within a /trip leg.
     if not matches and len(candidates) == 1 and not candidates[0].get("tripId"):

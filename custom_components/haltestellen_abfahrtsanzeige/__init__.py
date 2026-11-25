@@ -1,4 +1,4 @@
-"""Bus departure boards for any locality: one selected stop per entry."""
+"""Transit departure boards for any locality: one selected stop per entry."""
 from __future__ import annotations
 
 import logging
@@ -13,7 +13,8 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .api import TransitousClient, TransitousError
 from .const import (
     CONF_BOARD_SIZE, CONF_STOP_ID, CONF_STOP_NAME, DEFAULT_BOARD_SIZE,
-    CONF_REFRESH_MODE, DEFAULT_REFRESH_MODE, DOMAIN, UPDATE_INTERVAL,
+    CONF_REFRESH_MODE, CONF_TRANSPORT_TYPES, DEFAULT_DEPARTURE_MODES,
+    DEFAULT_REFRESH_MODE, DOMAIN, TRANSPORT_MODES, UPDATE_INTERVAL,
 )
 from .dashboard import async_remove_dashboard, async_setup_dashboard
 from .departures import convert_stoptimes
@@ -28,7 +29,7 @@ PLATFORMS = ["sensor", "binary_sensor"]
 
 
 class BusStopCoordinator(DataUpdateCoordinator[dict]):
-    """Query an individual stop for all road-based bus departures."""
+    """Query an individual stop for the selected transport modes."""
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         super().__init__(hass, _LOGGER, name=f"{DOMAIN}_{entry.entry_id}",
                          update_interval=UPDATE_INTERVAL, always_update=True)
@@ -62,9 +63,12 @@ class BusStopCoordinator(DataUpdateCoordinator[dict]):
                 self.hass.config_entries.async_update_entry(
                     self.entry, data={**data, "stop_lat": positions[0], "stop_lon": positions[1]},
                 )
+            transport_types = self.entry.options.get(CONF_TRANSPORT_TYPES, data.get(CONF_TRANSPORT_TYPES, ()))
+            modes = tuple(mode for kind in transport_types for mode in TRANSPORT_MODES.get(kind, ()))
             raw = await self.api.get_departures(
                 data[CONF_STOP_ID], positions,
                 self.entry.options.get(CONF_BOARD_SIZE, DEFAULT_BOARD_SIZE),
+                modes=modes or DEFAULT_DEPARTURE_MODES,
             )
             converted = convert_stoptimes(
                 raw, data[CONF_STOP_NAME],

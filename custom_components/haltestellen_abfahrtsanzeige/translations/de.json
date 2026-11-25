@@ -20,7 +20,8 @@
         "title": "Abfahrtstafel hinzufügen",
         "description": "Abfahrten an {stop}",
         "data": {
-          "name": "Sensorname"
+          "name": "Sensorname",
+          "transport_types": "Verkehrsmittel"
         }
       }
     },
@@ -29,7 +30,8 @@
       "no_stops": "Für diesen Ort wurden keine Haltestellen gefunden.",
       "invalid_search": "Bitte mindestens zwei Zeichen eingeben.",
       "invalid_stop": "Bitte eine Haltestelle aus der Liste auswählen.",
-      "invalid_name": "Bitte einen Sensornamen eingeben."
+      "invalid_name": "Bitte einen Sensornamen eingeben.",
+      "no_transport_types": "Wähle mindestens ein Verkehrsmittel."
     },
     "abort": {
       "already_configured": "Diese Haltestelle wurde bereits eingerichtet."
@@ -41,12 +43,17 @@
         "title": "Abfahrtstafel",
         "data": {
           "board_size": "Maximale Anzahl abgefragter Abfahrten",
-          "refresh_mode": "Aktualisierungsmodus"
+          "refresh_mode": "Aktualisierungsmodus",
+          "transport_types": "Verkehrsmittel"
         },
         "data_description": {
-          "refresh_mode": "Steuert automatisch, wie häufig die Haltestelle abgefragt wird. Bei Fehlern werden die Intervalle unabhängig davon verlängert."
+          "refresh_mode": "Steuert automatisch, wie häufig die Haltestelle abgefragt wird. Bei Fehlern werden die Intervalle unabhängig davon verlängert.",
+          "transport_types": "Wähle die Verkehrsmittel, deren Abfahrten für diese Haltestelle abgerufen werden."
         }
       }
+    },
+    "error": {
+      "no_transport_types": "Wähle mindestens ein Verkehrsmittel."
     }
   },
   "exceptions": {
@@ -55,14 +62,14 @@
   "triggers": {
     "departure_soon": {
       "name": "Abfahrt steht bevor",
-      "description": "Löst einmal pro Busfahrt aus, sobald die ausgewählte Restzeit bis zur Abfahrt erreicht wird.",
+      "description": "Löst einmal pro Fahrt aus, sobald die ausgewählte Restzeit bis zur Abfahrt erreicht wird.",
       "fields": {
         "entity_id": {
           "name": "Haltestellensensor",
           "description": "Einen Sensor dieser Integration auswählen."
         },
         "line": {
-          "name": "Buslinie (optional)",
+          "name": "Linie (optional)",
           "description": "Exakte Liniennummer; leer lassen für alle Linien."
         },
         "destination": {
@@ -77,14 +84,14 @@
     },
     "delay_reached": {
       "name": "Verspätung erreicht",
-      "description": "Löst aus, wenn eine Busfahrt neu mit mindestens der gewählten Verspätung gemeldet wird.",
+      "description": "Löst aus, wenn eine Fahrt neu mit mindestens der gewählten Verspätung gemeldet wird.",
       "fields": {
         "entity_id": {
           "name": "Haltestellensensor",
           "description": "Einen Sensor dieser Integration auswählen."
         },
         "line": {
-          "name": "Buslinie (optional)",
+          "name": "Linie (optional)",
           "description": "Exakte Liniennummer; leer lassen für alle Linien."
         },
         "destination": {
@@ -98,15 +105,15 @@
       }
     },
     "trip_cancelled": {
-      "name": "Busfahrt fällt aus",
-      "description": "Löst aus, wenn eine bevorstehende Busfahrt neu als ausgefallen gemeldet wird.",
+      "name": "Fahrt fällt aus",
+      "description": "Löst aus, wenn eine bevorstehende Fahrt neu als ausgefallen gemeldet wird.",
       "fields": {
         "entity_id": {
           "name": "Haltestellensensor",
           "description": "Einen Sensor dieser Integration auswählen."
         },
         "line": {
-          "name": "Buslinie (optional)",
+          "name": "Linie (optional)",
           "description": "Exakte Liniennummer; leer lassen für alle Linien."
         },
         "destination": {
@@ -122,6 +129,18 @@
         "adaptive": "Dynamisch (1–10 Minuten)",
         "economy": "Datensparend (2–12 Minuten)",
         "fixed": "Fest (5 Minuten)"
+      }
+    },
+    "transport_types": {
+      "options": {
+        "bus": "Bus",
+        "coach": "Fernbus",
+        "tram": "Straßenbahn",
+        "suburban": "S-Bahn",
+        "subway": "U-Bahn",
+        "regional_rail": "Regionalzug",
+        "long_distance_rail": "Fernzug",
+        "ferry": "Fähre"
       }
     }
   }

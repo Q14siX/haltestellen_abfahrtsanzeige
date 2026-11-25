@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timezone
 from typing import Any
 
-from .const import DATA_STALE_AFTER
+from .const import DATA_STALE_AFTER, DEPARTURE_MODES
 
 
 # Keep Home Assistant attribute sizes predictable even for long-distance coaches.
@@ -26,11 +26,6 @@ def parse_time(value: Any) -> datetime | None:
 
 def _text(value: Any) -> str:
     return str(value).strip() if value is not None else ""
-
-
-def _is_bus(event: dict[str, Any]) -> bool:
-    # MOTIS modes for public road-based buses; preserve bus-only semantics.
-    return _text(event.get("mode")).upper() in {"BUS", "COACH"}
 
 
 def _following_stops(event: dict[str, Any]) -> tuple[list[dict[str, Any]], int]:
@@ -83,14 +78,17 @@ def _following_stops(event: dict[str, Any]) -> tuple[list[dict[str, Any]], int]:
 def convert_stoptimes(raw: dict[str, Any], stop_name: str, limit: int = 40,
                       now: datetime | None = None,
                       stop_position: tuple[float, float] | None = None) -> dict[str, Any]:
-    """Keep future scheduled or predicted BUS departures; preserve cancellations."""
+    """Keep future scheduled or predicted transit departures; preserve cancellations."""
     now = now or datetime.now(timezone.utc)
     if not isinstance(raw, dict) or not isinstance(raw.get("stopTimes"), list):
         raise ValueError("Invalid stop departure payload")
     result: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
     for event in raw["stopTimes"]:
-        if not isinstance(event, dict) or not _is_bus(event):
+        if not isinstance(event, dict):
+            continue
+        mode = _text(event.get("mode")).upper()
+        if mode not in DEPARTURE_MODES:
             continue
         place = event.get("place") or {}
         if not isinstance(place, dict):
@@ -112,7 +110,8 @@ def convert_stoptimes(raw: dict[str, Any], stop_name: str, limit: int = 40,
             continue
         seen.add(unique)
         destination = _text(event.get("headsign")) or _text((event.get("tripTo") or {}).get("name"))
-        line = _text(event.get("routeShortName")) or _text(event.get("displayName")) or _text(event.get("routeLongName")) or "Bus"
+        line = (_text(event.get("routeShortName")) or _text(event.get("displayName"))
+                or _text(event.get("routeLongName")) or {"BUS": "Bus", "COACH": "Bus", "TRAM": "Tram"}.get(mode, "–"))
         delay = round((actual - planned).total_seconds() / 60) if planned and actual and not cancelled else None
         following, overflow = _following_stops(event)
         # TimestampReason is more precise than the generic trip-wide realTime
@@ -135,6 +134,7 @@ def convert_stoptimes(raw: dict[str, Any], stop_name: str, limit: int = 40,
             start_lat, start_lon = stop_position or (None, None)
         result.append({
             "linie": line,
+            "verkehrsmittel": mode,
             "fahrt_id": trip_id,
             "start_lat": start_lat,
             "start_lon": start_lon,
@@ -261,7 +261,7 @@ def _compact_departure(row: dict[str, Any]) -> dict[str, Any]:
         "linie", "fahrt_id", "ziel", "abfahrt", "plan_abfahrt",
         "verspaetung_minuten", "echtzeit", "zeitqualitaet",
         "ausfall", "steig", "verkehrsunternehmen",
-        "linienfarbe", "linien_textfarbe",
+        "linienfarbe", "linien_textfarbe", "verkehrsmittel",
     )
     compact = {}
     for key in fields:

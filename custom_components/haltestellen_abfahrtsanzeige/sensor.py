@@ -27,7 +27,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry,
 
 
 class BusStopSensor(CoordinatorEntity, SensorEntity):
-    """Minutes to next usable bus; departure-board rows in state attributes."""
+    """Minutes to next usable departure; departure-board rows in state attributes."""
     _attr_has_entity_name = False
     _attr_icon = "mdi:bus-clock"
     _attr_native_unit_of_measurement = UnitOfTime.MINUTES
